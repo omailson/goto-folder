@@ -21,4 +21,4 @@ def run():
         try:
             print(resolver[arg])
         except KeyError as e:
-            sys.exit("goto: Can't find key {0}".format(str(e)))
+            sys.exit("goto: Can't find bookmark {0}".format(str(e)))
