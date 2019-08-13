@@ -4,7 +4,7 @@ from gotofolder import apps
 
 
 def main():
-    apps.run()
+    apps.aliases()
 
 
 if __name__ == '__main__':
