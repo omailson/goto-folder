@@ -35,6 +35,8 @@ class BaseResolver:
     def __get_resolved_paths(self):
         if self.__resolved_paths is None:
             self.__resolved_paths = self.resolve()
+            # Remove bookmarks with forbidden characters
+            self.__resolved_paths = {k: v for k, v in self.__resolved_paths.items() if '.' not in k and '/' not in k}
         return self.__resolved_paths
 
     def items(self):
