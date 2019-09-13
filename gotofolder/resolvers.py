@@ -1,7 +1,7 @@
 import os
 
 from .constants import SEPARATOR, GOTO_FILE_NAME
-from .helpers import is_root
+from .helpers import is_root, get_expanded_path
 
 
 # BaseResolver class. Should be used as a base class to any resolver
@@ -75,7 +75,7 @@ class FileResolver(BaseResolver):
 
             for b in bookmarks:
                 alias, path = b.split(SEPARATOR)
-                resolved[alias] = os.path.abspath(os.path.join(self.path, path))
+                resolved[alias] = self.__build_path(path)
 
         return resolved
 
@@ -84,6 +84,12 @@ class FileResolver(BaseResolver):
             return RootResolver()
 
         return FileResolver(os.path.dirname(self.path))
+
+    def __build_path(self, path):
+        expanded_path = get_expanded_path(path)
+        path_with_base = os.path.join(self.path, expanded_path)
+        absolute_path = os.path.abspath(path_with_base)
+        return absolute_path
 
     def __repr__(self):
         return "FileResolver({0})".format(self.path)
@@ -118,9 +124,12 @@ class EnvVarResolver(BaseResolver):
             if not os.path.isabs(path):
                 continue
 
-            resolved_paths[alias] = path
+            resolved_paths[alias] = self.__build_path(path)
 
         return resolved_paths
+
+    def __build_path(self, path):
+        return get_expanded_path(path)
 
     def __repr__(self):
         return "EnvVarResolver(${0})".format(self.envname)
