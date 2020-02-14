@@ -48,6 +48,9 @@ class BaseResolver:
 
         return resolved_paths.items()
 
+    def resolve(self):
+        raise NotImplementedError
+
 
 # A resolver that has no keys and no next_resolver
 class RootResolver(BaseResolver):
@@ -65,7 +68,7 @@ class FileResolver(BaseResolver):
         return self.__path
 
     def resolve(self):
-        goto_file = os.path.abspath(os.path.join(self.path, GOTO_FILE_NAME))
+        goto_file = self.__goto_file_path()
         if not os.path.isfile(goto_file):
             return {}
 
@@ -91,8 +94,11 @@ class FileResolver(BaseResolver):
         absolute_path = os.path.abspath(path_with_base)
         return absolute_path
 
+    def __goto_file_path(self):
+        return os.path.abspath(os.path.join(self.path, GOTO_FILE_NAME))
+
     def __repr__(self):
-        return "FileResolver({0})".format(self.path)
+        return "FileResolver({0})".format(self.__goto_file_path())
 
 
 class EnvVarResolver(BaseResolver):
