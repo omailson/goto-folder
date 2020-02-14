@@ -6,15 +6,11 @@ from .helpers import is_root, get_expanded_path
 
 # BaseResolver class. Should be used as a base class to any resolver
 class BaseResolver:
-    def __init__(self, next_resolver=None):
-        self.__next_resolver = next_resolver
+    def __init__(self, *args, **kwargs):
         self.__resolved_paths = None
 
     @property
     def next(self):
-        if self.__next_resolver is not None:
-            return self.__next_resolver
-
         next_resolver = self.next_resolver()
         if next_resolver is not None:
             return next_resolver
@@ -104,9 +100,10 @@ class FileResolver(BaseResolver):
 class EnvVarResolver(BaseResolver):
     DEFAULT_SEPARATOR = ','
 
-    def __init__(self, envname, sep=DEFAULT_SEPARATOR, *args, **kwargs):
+    def __init__(self, envname, sep=DEFAULT_SEPARATOR, next_resolver=None, *args, **kwargs):
         super(EnvVarResolver, self).__init__(*args, **kwargs)
         self.__envname = envname
+        self._next_resolver = next_resolver
         self.sep = sep
 
     @property
@@ -133,6 +130,9 @@ class EnvVarResolver(BaseResolver):
             resolved_paths[alias] = self.__build_path(path)
 
         return resolved_paths
+
+    def next_resolver(self):
+        return self._next_resolver
 
     def __build_path(self, path):
         return get_expanded_path(path)
