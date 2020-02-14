@@ -1,5 +1,5 @@
 SOURCE="${BASH_SOURCE[0]}" # Path of this sourced file
-export GOTOFOLDER_SCRIPT_PATH=`dirname $SOURCE`
+export GOTOFOLDER_SCRIPT_PATH=$(dirname "$SOURCE")
 
 goto() {
 	local result
