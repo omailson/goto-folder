@@ -54,6 +54,16 @@ class RootResolver(BaseResolver):
         return {}
 
 
+# A resolver that resolves to the keys of a given dictionary
+class DictResolver(BaseResolver):
+    def __init__(self, d, *args, **kwargs):
+        self._d = d
+        super(DictResolver, self).__init__(*args, **kwargs)
+
+    def resolve(self):
+        return self._d
+
+
 class FileResolver(BaseResolver):
     def __init__(self, path, *args, **kwargs):
         self.__path = path
