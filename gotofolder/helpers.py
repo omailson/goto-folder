@@ -5,10 +5,6 @@ def home_dir():
     return os.path.expanduser('~')
 
 
-def is_root(path):
-    return path == home_dir()
-
-
 def get_expanded_path(path):
     # Expand environment vars
     path = os.path.expandvars(path)
@@ -27,8 +23,7 @@ class Path:
         return self._realpath
 
     def has_parent(self):
-        return not is_root(self._realpath)
-        # TODO return self._realpath != home_dir()
+        return self._realpath != home_dir()
 
     def parent(self) -> 'Path':
         if not self.has_parent():

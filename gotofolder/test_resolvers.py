@@ -1,24 +1,19 @@
 import os
-import gotofolder.helpers
-from gotofolder.helpers import Path
 
+from gotofolder.helpers import Path
+from gotofolder.resolvers import FileResolver, EnvVarResolver, DictResolver
+
+TESTDATA_DIR = "testdata"
 TESTENVVAR = "MOCK_GOTOFOLDERS"
 
-## Monkeypatching
-TESTDATA_DIR = "testdata"
 
-def monkeypatched_isroot(path):
-    root = os.path.abspath(TESTDATA_DIR)
-    return os.path.abspath(path) == root
-
-gotofolder.helpers.is_root = monkeypatched_isroot
-
-from gotofolder.resolvers import FileResolver, EnvVarResolver, DictResolver
-## End of Monkeypatching
+class MockPath(Path):
+    def has_parent(self):
+        return self.realpath() != os.path.abspath(TESTDATA_DIR)
 
 
 def create_resolver_in(path=None):
-    cwd = Path(TESTDATA_DIR)
+    cwd = MockPath(TESTDATA_DIR)
     if path is not None:
         cwd = cwd.get_child(path)
 
