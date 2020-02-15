@@ -2,11 +2,12 @@ import sys
 import os
 
 from .constants import ENV_NAME
+from .helpers import Path
 from .resolvers import FileResolver, EnvVarResolver
 
 
 def create_resolver():
-    return EnvVarResolver(ENV_NAME, next_resolver=FileResolver(os.getcwd()))
+    return EnvVarResolver(ENV_NAME, next_resolver=FileResolver(Path(os.getcwd())))
 
 
 def run():

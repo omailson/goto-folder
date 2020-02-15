@@ -1,7 +1,7 @@
 import os
 
 from .constants import SEPARATOR, GOTO_FILE_NAME
-from .helpers import is_root, get_expanded_path
+from .helpers import Path
 
 
 # BaseResolver class. Should be used as a base class to any resolver
@@ -21,10 +21,10 @@ class BaseResolver:
     def next_resolver(self):
         return None
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> str:
         path = self.__get_resolved_paths().get(key)
         if path is not None:
-            return path
+            return str(path)
 
         return self.next[key]
 
@@ -65,7 +65,7 @@ class DictResolver(BaseResolver):
 
 
 class FileResolver(BaseResolver):
-    def __init__(self, path, *args, **kwargs):
+    def __init__(self, path: Path, *args, **kwargs):
         self.__path = path
         super(FileResolver, self).__init__(*args, **kwargs)
 
@@ -75,33 +75,27 @@ class FileResolver(BaseResolver):
 
     def resolve(self):
         goto_file = self.__goto_file_path()
-        if not os.path.isfile(goto_file):
+        if not goto_file.is_file():
             return {}
 
         resolved = {}
-        with open(goto_file, 'r') as f:
+        with open(goto_file.realpath(), 'r') as f:
             bookmarks = f.read().splitlines()
 
             for b in bookmarks:
                 alias, path = b.split(SEPARATOR)
-                resolved[alias] = self.__build_path(path)
+                resolved[alias] = self.path.get_child(path)
 
         return resolved
 
     def next_resolver(self):
-        if is_root(self.path):
+        if not self.path.has_parent():
             return RootResolver()
 
-        return FileResolver(os.path.dirname(self.path))
-
-    def __build_path(self, path):
-        expanded_path = get_expanded_path(path)
-        path_with_base = os.path.join(self.path, expanded_path)
-        absolute_path = os.path.abspath(path_with_base)
-        return absolute_path
+        return FileResolver(self.path.parent())
 
     def __goto_file_path(self):
-        return os.path.abspath(os.path.join(self.path, GOTO_FILE_NAME))
+        return self.path.get_child(GOTO_FILE_NAME)
 
     def __repr__(self):
         return "FileResolver({0})".format(self.__goto_file_path())
@@ -137,15 +131,12 @@ class EnvVarResolver(BaseResolver):
             if not os.path.isabs(path):
                 continue
 
-            resolved_paths[alias] = self.__build_path(path)
+            resolved_paths[alias] = Path(path)
 
         return resolved_paths
 
     def next_resolver(self):
         return self._next_resolver
-
-    def __build_path(self, path):
-        return get_expanded_path(path)
 
     def __repr__(self):
         return "EnvVarResolver(${0})".format(self.envname)

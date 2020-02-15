@@ -1,5 +1,6 @@
 import os
 import gotofolder.helpers
+from gotofolder.helpers import Path
 
 TESTENVVAR = "MOCK_GOTOFOLDERS"
 
@@ -7,8 +8,8 @@ TESTENVVAR = "MOCK_GOTOFOLDERS"
 TESTDATA_DIR = "testdata"
 
 def monkeypatched_isroot(path):
-    root = TESTDATA_DIR
-    return path == root
+    root = os.path.abspath(TESTDATA_DIR)
+    return os.path.abspath(path) == root
 
 gotofolder.helpers.is_root = monkeypatched_isroot
 
@@ -17,9 +18,9 @@ from gotofolder.resolvers import FileResolver, EnvVarResolver, DictResolver
 
 
 def create_resolver_in(path=None):
-    cwd = TESTDATA_DIR
+    cwd = Path(TESTDATA_DIR)
     if path is not None:
-        cwd = cwd + "/" + path
+        cwd = cwd.get_child(path)
 
     return EnvVarResolver(TESTENVVAR, next_resolver=FileResolver(cwd))
 
@@ -44,6 +45,15 @@ class TestResolvers:
         expected_path2 = path_to("a/b/c")
         path_to_abc = resolver["abc"]
         assert path_to_abc == expected_path2
+
+    def test_unknown_bookmark(self):
+        resolver = create_resolver_in()
+
+        try:
+            _ = resolver["x"]
+            assert False
+        except KeyError:
+            assert True
 
     def test_slashes_are_ignored(self):
         resolver = create_resolver_in()
