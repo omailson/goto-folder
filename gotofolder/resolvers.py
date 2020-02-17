@@ -48,12 +48,6 @@ class BaseResolver:
         raise NotImplementedError
 
 
-# A resolver that has no keys and no next_resolver
-class RootResolver(BaseResolver):
-    def resolve(self):
-        return {}
-
-
 # A resolver that resolves to the keys of a given dictionary
 class DictResolver(BaseResolver):
     def __init__(self, d, *args, **kwargs):
@@ -90,7 +84,7 @@ class FileResolver(BaseResolver):
 
     def next_resolver(self):
         if not self.path.has_parent():
-            return RootResolver()
+            return None
 
         return FileResolver(self.path.parent())
 
