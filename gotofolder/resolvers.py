@@ -1,4 +1,5 @@
 import os
+from typing import Union, Dict, Optional
 
 from .constants import SEPARATOR, GOTO_FILE_NAME
 from .helpers import Path
@@ -9,17 +10,20 @@ class BaseResolver:
     def __init__(self, *args, **kwargs):
         self.__resolved_paths = None
 
+    def resolve(self):
+        raise NotImplementedError
+
+    def next_resolver(self) -> Optional['BaseResolver']:
+        return None
+
     @property
-    def next(self):
+    def next(self) -> Union['BaseResolver', Dict, None]:
         next_resolver = self.next_resolver()
         if next_resolver is not None:
             return next_resolver
 
         # Return an empty dict so it can raise a KeyError for any key
         return {}
-
-    def next_resolver(self):
-        return None
 
     def __getitem__(self, key) -> str:
         path = self.__get_resolved_paths().get(key)
@@ -43,9 +47,6 @@ class BaseResolver:
                 resolved_paths[alias] = path
 
         return resolved_paths.items()
-
-    def resolve(self):
-        raise NotImplementedError
 
 
 # A resolver that resolves to the keys of a given dictionary
