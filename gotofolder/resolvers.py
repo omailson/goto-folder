@@ -8,7 +8,7 @@ from .helpers import Path
 # BaseResolver class. Should be used as a base class to any resolver
 class BaseResolver:
     def __init__(self, *args, **kwargs):
-        self._cached_resolved_items = None
+        pass
 
     def resolved_items(self):
         raise NotImplementedError
@@ -33,11 +33,9 @@ class BaseResolver:
         return self.next[key]
 
     def _resolved_items(self):
-        if self._cached_resolved_items is None:
-            self._cached_resolved_items = self.resolved_items()
-            # Remove bookmarks with forbidden characters
-            self._cached_resolved_items = {k: v for k, v in self._cached_resolved_items.items() if '.' not in k and '/' not in k}
-        return self._cached_resolved_items
+        resolved_items = self.resolved_items()
+        # Remove bookmarks with forbidden characters
+        return {k: v for k, v in resolved_items.items() if '.' not in k and '/' not in k}
 
     def items(self):
         resolved_paths = self._resolved_items().copy()
