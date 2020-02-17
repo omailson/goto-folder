@@ -8,9 +8,9 @@ from .helpers import Path
 # BaseResolver class. Should be used as a base class to any resolver
 class BaseResolver:
     def __init__(self, *args, **kwargs):
-        self.__resolved_paths = None
+        self._cached_resolved_items = None
 
-    def resolve(self):
+    def resolved_items(self):
         raise NotImplementedError
 
     def next_resolver(self) -> Optional['BaseResolver']:
@@ -26,21 +26,21 @@ class BaseResolver:
         return {}
 
     def __getitem__(self, key) -> str:
-        path = self.__get_resolved_paths().get(key)
+        path = self._resolved_items().get(key)
         if path is not None:
             return str(path)
 
         return self.next[key]
 
-    def __get_resolved_paths(self):
-        if self.__resolved_paths is None:
-            self.__resolved_paths = self.resolve()
+    def _resolved_items(self):
+        if self._cached_resolved_items is None:
+            self._cached_resolved_items = self.resolved_items()
             # Remove bookmarks with forbidden characters
-            self.__resolved_paths = {k: v for k, v in self.__resolved_paths.items() if '.' not in k and '/' not in k}
-        return self.__resolved_paths
+            self._cached_resolved_items = {k: v for k, v in self._cached_resolved_items.items() if '.' not in k and '/' not in k}
+        return self._cached_resolved_items
 
     def items(self):
-        resolved_paths = self.__get_resolved_paths().copy()
+        resolved_paths = self._resolved_items().copy()
 
         for alias, path in self.next.items():
             if alias not in resolved_paths:
@@ -55,7 +55,7 @@ class DictResolver(BaseResolver):
         self._d = d
         super(DictResolver, self).__init__(*args, **kwargs)
 
-    def resolve(self):
+    def resolved_items(self):
         return self._d
 
 
@@ -68,7 +68,7 @@ class FileResolver(BaseResolver):
     def path(self):
         return self.__path
 
-    def resolve(self):
+    def resolved_items(self):
         goto_file = self.__goto_file_path()
         if not goto_file.is_file():
             return {}
@@ -109,7 +109,7 @@ class EnvVarResolver(BaseResolver):
     def envname(self):
         return self.__envname
 
-    def resolve(self):
+    def resolved_items(self):
         gotofolders = os.getenv(self.envname)
         if not gotofolders:
             return {}
