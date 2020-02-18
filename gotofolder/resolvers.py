@@ -49,12 +49,16 @@ class BaseResolver:
 
 # A resolver that resolves to the keys of a given dictionary
 class DictResolver(BaseResolver):
-    def __init__(self, d, *args, **kwargs):
+    def __init__(self, d, next_resolver=None, *args, **kwargs):
         self._d = d
+        self._next_resolver = next_resolver
         super(DictResolver, self).__init__(*args, **kwargs)
 
     def resolved_items(self):
         return self._d
+
+    def next_resolver(self) -> Optional['BaseResolver']:
+        return self._next_resolver
 
 
 class FileResolver(BaseResolver):

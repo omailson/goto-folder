@@ -50,6 +50,18 @@ class TestResolvers:
 
         assert_key_error(resolver, key)
 
+    def test_items(self):
+        resolver = DictResolver({"foo": "bar", "baz": "foo"})
+
+        items = dict(resolver.items())
+        assert items["foo"] == "bar"
+        assert items["baz"] == "foo"
+
+        resolver = DictResolver({"foo": "bar"}, next_resolver=DictResolver({"baz": "foo"}))
+        items = dict(resolver.items())
+        assert items["foo"] == "bar"
+        assert items["baz"] == "foo"
+
     # Test file resolver
     def test_simple_resolve(self):
         resolver = create_resolver_in()
@@ -82,7 +94,38 @@ class TestResolvers:
         assert resolver["abc"] == path_to_abc
 
     # Test envvar resolver
+    def test_envvarresolver_simple(self):
+        os.environ[TESTENVVAR] = "a:" + path_to("a") + "," + "abc:" + path_to("a/b/c")
+
+        resolver = EnvVarResolver(TESTENVVAR)
+
+        expected_path = path_to("a")
+        path_to_a = resolver["a"]
+        assert path_to_a == expected_path
+
+        expected_path2 = path_to("a/b/c")
+        path_to_abc = resolver["abc"]
+        assert path_to_abc == expected_path2
+
+    def test_envvarresolver_override(self):
+        os.environ[TESTENVVAR] = "aa:" + path_to("a") + "," + "aa:" + path_to("a/a")
+
+        resolver = EnvVarResolver(TESTENVVAR)
+
+        expected_path = path_to("a/a")
+        path_to_aa = resolver["aa"]
+        assert path_to_aa == expected_path
+
     def test_envvarresolver_pass_to_the_next_resolver(self):
         resolver = EnvVarResolver(TESTENVVAR, next_resolver=DictResolver({"foo": "bar"}))
 
         assert resolver["foo"] == "bar"
+
+    def test_envvarresolver_takes_precedence_over_next_resolver(self):
+        os.environ[TESTENVVAR] = "a:" + path_to("a")
+        resolver1 = EnvVarResolver(TESTENVVAR, next_resolver=None)
+        resolver2 = EnvVarResolver(TESTENVVAR, next_resolver=DictResolver({"a": "a/a"}))
+
+        expected_path = path_to("a")
+        assert resolver1["a"] == expected_path
+        assert resolver2["a"] == expected_path
