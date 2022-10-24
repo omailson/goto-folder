@@ -1,0 +1,16 @@
+List all bookmarks
+$ goto
+
+List all aliases
+$ GOTOFOLDER/goto-completion.py
+
+Resolve alias
+$ goto <alias>
+
+TODO:
+* goto-completion.py should return the suggestions instead of making us use compgen -W for that matter
+  * This or change the name of goto-completion.py to a more appropriate one (if we're not dealing with completion with that python code)
+* Group bookmakrs when listing them all
+  * One idea is to group by where .goto files are located
+  * Another is to group by folders where bookmarks area pointing to (eg: a/b/c and a/b/x are grouped together because they have a/b in common)
+. Remove next_resolver param from BaseResolver (allow method overrides only)

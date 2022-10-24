@@ -39,5 +39,8 @@ class Path:
     def is_file(self):
         return os.path.isfile(self._realpath)
 
+    def has_file(self, filename: str) -> bool:
+        return self.get_child(filename).is_file()
+
     def __str__(self):
         return self.realpath()

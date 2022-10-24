@@ -24,6 +24,24 @@ You can also add your bookmarks to a file called `.goto`. This file can be local
 
 Inside `.goto` the paths can be either absolute or relative paths. If the path is relative, it will be resolved relative to where the `.goto` file containing the bookmark is located.
 
+### Example
+
+Imagine the following tree structure
+
+```
+/home/user
+├── .goto
+├── projects/
+│   ├── .goto
+│   └── javascript/
+│       ├── nice-project-with-a-long-name/
+│       └───projectB/
+└── pictures/
+    ├── rome/
+    ├── florence/
+    └── nice/
+```
+
 ## Instalation
 
 After cloning this repository, add the following line to your bash startup script (usually `~/.bashrc` or `~/.bash_profile`)

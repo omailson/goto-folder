@@ -5,6 +5,16 @@ from .constants import SEPARATOR, GOTO_FILE_NAME
 from .helpers import Path
 
 
+class ResolvedPath:
+    def __init__(self, alias: str, path: Path, gotofile: Path):
+        self.alias = alias
+        self.path = path
+        self.gotofile = gotofile
+
+    def __repr__(self):
+        return self.path
+
+
 # BaseResolver class. Should be used as a base class to any resolver
 class BaseResolver:
     def __init__(self, *args, **kwargs):
@@ -36,6 +46,18 @@ class BaseResolver:
         resolved_items = self.resolved_items()
         # Remove bookmarks with forbidden characters
         return {k: v for k, v in resolved_items.items() if '.' not in k and '/' not in k}
+
+    def _filter(k, v):
+        if '.' in k:
+            return False
+
+        if '/' in k:
+            return False
+        return True
+
+    def _map(k, v):
+        return (k, v)
+        # return {k: v}
 
     def items(self):
         resolved_paths = self._resolved_items().copy()
@@ -85,6 +107,9 @@ class FileResolver(BaseResolver):
 
         return resolved
 
+    def get(self, alias) -> Union[ResolvedPath, None]:
+        return self.resolved_items().get(alias)
+
     def next_resolver(self):
         if not self.path.has_parent():
             return None
@@ -110,6 +135,9 @@ class EnvVarResolver(BaseResolver):
     @property
     def envname(self):
         return self.__envname
+
+    def get(self, alias) -> Union[ResolvedPath, None]:
+        return self.resolved_items().get(alias)
 
     def resolved_items(self):
         gotofolders = os.getenv(self.envname)

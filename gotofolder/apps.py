@@ -19,8 +19,13 @@ def run():
         sys.exit()
 
     key = sys.argv[1]
+    keys = key.split('.')
     try:
-        print(resolver[key])
+        p = '.'
+        for k in keys:
+            p = resolver[k]
+            resolver = FileResolver(Path(p))
+        print(p)
     except KeyError as e:
         sys.exit("goto: Can't find bookmark {0}".format(str(e)))
 
